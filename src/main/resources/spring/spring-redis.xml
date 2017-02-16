@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:web="http://www.springframework.org/schema/web" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd
+	http://www.springframework.org/schema/web http://www.springframework.org/schema/web/spring-web-4.3.xsd">
+	<description>Spring Redis Cluster Configuration</description>
+	<!-- 连接池配置,配置方法见 http://www.2cto.com/database/201311/254449.html -->
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxTotal" value="${redis.maxTotal}" /> <!-- 控制一个pool可分配多少个jedis实例 -->
+		<property name="maxIdle" value="${redis.maxIdle}" /><!-- 最大能够保持idel状态的对象数 -->
+		<property name="maxWaitMillis" value="${redis.maxWaitMillis}" /><!-- 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException -->
+		<property name="timeBetweenEvictionRunsMillis" value="${redis.timeBetweenEvictionRunsMillis}" /><!-- 多长时间检查一次连接池中空闲的连接 -->
+		<property name="minEvictableIdleTimeMillis" value="${redis.minEvictableIdleTimeMillis}" /><!-- 空闲连接多长时间后会被收回,单位是毫秒 -->
+	</bean>
+
+	<!-- cluster -->
+	<bean id="jedisCluster" class="redis.clients.jedis.JedisCluster" scope="singleton">
+		<constructor-arg name="nodes">
+			<util:set>
+				<!-- 集群地址 -->
+				<bean class="redis.clients.jedis.HostAndPort">
+					<constructor-arg name="host" value="${redis.host}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port0}" type="int"></constructor-arg>
+				</bean>
+				<bean class="redis.clients.jedis.HostAndPort">
+					<constructor-arg name="host" value="${redis.host}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port1}" type="int"></constructor-arg>
+				</bean>
+				<bean class="redis.clients.jedis.HostAndPort">
+					<constructor-arg name="host" value="${redis.host}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port2}" type="int"></constructor-arg>
+				</bean>
+				<bean class="redis.clients.jedis.HostAndPort">
+					<constructor-arg name="host" value="${redis.host}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port3}" type="int"></constructor-arg>
+				</bean>
+				<bean class="redis.clients.jedis.HostAndPort">
+					<constructor-arg name="host" value="${redis.host}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port4}" type="int"></constructor-arg>
+				</bean>
+				<bean class="redis.clients.jedis.HostAndPort">
+					<constructor-arg name="host" value="${redis.host}"></constructor-arg>
+					<constructor-arg name="port" value="${redis.port5}" type="int"></constructor-arg>
+				</bean>
+			</util:set>
+		</constructor-arg>
+		<constructor-arg name="timeout" value="${redis.timeout}"></constructor-arg>
+		<constructor-arg name="poolConfig" ref="jedisPoolConfig"></constructor-arg>
+	</bean>
+</beans>

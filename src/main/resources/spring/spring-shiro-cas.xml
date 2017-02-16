@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+    <description>Spring Shiro Cas configuration</description>
+
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <bean class="org.demo.core.shiro.CustomFilterProxy">
+        <property name="excludeUrls">
+            <list>
+                <value>/r/**</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Shiro核心过滤器 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"></property>
+        <property name="filterChainDefinitions">
+            <value>
+                /u/online = casSecurityFilter
+                /news/latest = anon
+                /callback = callbackFilter
+                /logout = logout
+                /** = anon
+            </value>
+        </property>
+    </bean>
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="CustomPac4jRealm"></property>
+        <property name="subjectFactory" ref="pac4jSubjectFactory"></property>
+    </bean>
+    <!-- buji-pac4j配置 -->
+    <bean id="casConfiguration" class="org.pac4j.cas.config.CasConfiguration">
+        <property name="loginUrl" value="${cas.login.path}"></property>
+    </bean>
+
+    <bean id="casClient" class="org.pac4j.cas.client.CasClient">
+        <property name="configuration" ref="casConfiguration"></property>
+    </bean>
+    <bean id="clients" class="org.pac4j.core.client.Clients">
+        <property name="callbackUrl" value="${cas.callback.path}"></property>
+        <property name="clients">
+            <list>
+                <ref bean="casClient"/>
+            </list>
+        </property>
+    </bean>
+    <bean id="config" class="org.pac4j.core.config.Config">
+        <property name="clients" ref="clients"></property>
+    </bean>
+
+    <bean id="CustomPac4jRealm" class="org.demo.core.shiro.realm.CasRealm">
+    </bean>
+    <bean id="pac4jSubjectFactory" class="io.buji.pac4j.subject.Pac4jSubjectFactory"></bean>
+    <bean id="casSecurityFilter" class="io.buji.pac4j.filter.SecurityFilter">
+        <property name="config" ref="config"></property>
+        <property name="clients" value="CasClient"></property>
+    </bean>
+    <bean id="protectedSecurityFilter" class="io.buji.pac4j.filter.SecurityFilter">
+        <property name="config" ref="config"></property>
+    </bean>
+    <bean id="callbackFilter" class="io.buji.pac4j.filter.CallbackFilter">
+        <property name="config" ref="config"></property>
+        <property name="multiProfile" value="true"></property>
+    </bean>
+</beans>
